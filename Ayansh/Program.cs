@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using MathNet.Numerics;
 
@@ -9,6 +10,57 @@ namespace Ayansh
     class CommandLineExample
     {
         static void Main()
+        {
+            DataSet ds = RetunDataFromDatabase();
+
+            double[][] to2dArray = ConvertTo2dArray(ds.Tables[0]);
+            double[] toSingleArray = ConvertToArray(ds.Tables[1]);
+
+            var fact = Fit.MultiDim(to2dArray, toSingleArray, intercept: true);
+            double[] coefficient = new double[fact.Length];
+            int i = 0;
+            foreach (double n in fact)
+            {
+                coefficient[i] = n;
+                i++;
+            }
+        }
+        private static double[] ConvertToArray(DataTable dt)
+        {
+            double[] tableArray = new double[dt.Rows.Count];
+            for (int i = 0; i < dt.Rows.Count; i++)
+            {
+                tableArray[i] = Convert.ToDouble(dt.Rows[i].ItemArray[0]);
+            }
+            return tableArray;
+        }
+
+        private static double[][] ConvertTo2dArray(DataTable dt)
+        {
+            var tableEnumerable = dt.AsEnumerable();
+            //var tableArray = tableEnumerable.ToArray();
+           
+
+            double[][] tableArray = new double[dt.Rows.Count][];
+            for (int i = 0; i < dt.Rows.Count; i++)
+            {
+                var arr = new double[dt.Columns.Count];
+
+                for (int j = 0; j < dt.Columns.Count; j++)
+                {
+                    arr[j] = Convert.ToDouble(dt.Rows[i].ItemArray[j]);
+                }
+                tableArray[i] = arr;
+            }
+            return tableArray;
+        }
+
+        private static DataSet RetunDataFromDatabase()
+        {
+           return ConnectionFile.RetunDataFromDatabase();
+        }
+
+        private static void ReadCoefficient()
         {
             double[][] factors = new double[8][];
             factors[0] = new double[] { 60, 22, 8, 22 };
@@ -30,8 +82,6 @@ namespace Ayansh
                 i++;
             }
             //var gof = GoodnessOfFit.RSquared(predictor, predicted);
-
-            Console.ReadLine();
         }
 
         private static void MaxMinIntValFromAnArray()
